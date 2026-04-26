@@ -1,0 +1,201 @@
+{
+  "name": "AI",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        -272
+      ],
+      "id": "114ae66b-86c7-4731-b2a2-4da2d7ddb311",
+      "name": "When chat message received",
+      "webhookId": "f598d764-fedf-4f90-b625-10b3df3eac64"
+    },
+    {
+      "parameters": {
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You come up with search query for an internet search to best answer the user's question. "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        288,
+        -272
+      ],
+      "id": "1711d5e8-481d-4271-b1de-2d8a7cbfcfe2",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "arcee-ai/trinity-large-preview:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        224,
+        -48
+      ],
+      "id": "a60f4e74-9786-4c96-8663-ae54b64e405c",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "GD2NmTnLfpQxAZ1f",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        -48
+      ],
+      "id": "7923c595-ef9c-4281-8023-fbe7f13cc570",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"search_query\" : \"an internet search\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        480,
+        -48
+      ],
+      "id": "58d9e150-2248-4020-89b1-bf6fa6cf9b42",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "resource": "MapSearch",
+        "operation": "search",
+        "query": "={{ $json.output.search_query }}",
+        "requestOptions": {}
+      },
+      "type": "@mendable/n8n-nodes-firecrawl.firecrawl",
+      "typeVersion": 1,
+      "position": [
+        688,
+        -272
+      ],
+      "id": "80566026-f9ee-4d17-b87a-5f5c54331b23",
+      "name": "/search",
+      "credentials": {
+        "firecrawlApi": {
+          "id": "dFkmKOELOHGKwhMv",
+          "name": "Firecrawl account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/03c54435-e9ee-4e6d-b0b8-7aed7d96f668",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        912,
+        -272
+      ],
+      "id": "8bc34c62-ea80-4e01-8aaa-8c8a3b5db254",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "/search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "/search": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "94fa8e09-2a11-4a42-b7cd-6d007486b392",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9931672f9dacc59c4419c63b8bc6e0fd56af69a4df254c44e359ede923557d54"
+  },
+  "id": "xedOXsLpQuS2EIfq",
+  "tags": []
+}
