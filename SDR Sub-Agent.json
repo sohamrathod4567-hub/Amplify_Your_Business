@@ -1,0 +1,163 @@
+{
+  "name": "SDR Sub-Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "You are an SDR. You use your tool to read all the person records in the Pipedrive CRM system; For each Person, use your tool to create a Draft Email From Soham (The CTO of Accounting firm Account AI)  to pitch Account Ai's innovative accounting software products . The E-mail Should be Professionally formatted in HTML. Explain im the Email if people are interested, they should call +919879979098 to speak with our AI agent and schedule a demo .\n\nDO NOT INCLUDE ANY ADDITIONAL DETAILS THAT YOU DO NOT KNOW JUST SAY IT IS innovative streamline software application which can boost the efficiency and the productivity. \n\nTHE PHONE NUMBER SHOULD BE HIGHLIGHTED AND CLEARLY VISIBLE TO THE END USER.\n\n\nONLY DRAFT ONE EMAIL TO ONE LEAD, DO NOT REPEAT.\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        64,
+        0
+      ],
+      "id": "243fd4ad-037d-4ce8-b431-3c64c0473e08",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "arcee-ai/trinity-large-preview",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        0,
+        224
+      ],
+      "id": "cc28800a-f373-4299-a45f-1f6a69ac4dc4",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "wZZg2YY5kbJ6hmTs",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get many PERSON in Pipedrive\n\nIMPORATANT :\nYOU HAVE TO RETURN THE PERSON VALUE",
+        "resource": "person",
+        "operation": "getAll",
+        "returnAll": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.pipedriveTool",
+      "typeVersion": 1,
+      "position": [
+        128,
+        224
+      ],
+      "id": "31b4a430-fbf8-4857-9dae-b70e984cef61",
+      "name": "Get many people in Pipedrive",
+      "credentials": {
+        "pipedriveApi": {
+          "id": "pqa6MgdJbY3cDrz0",
+          "name": "Pipedrive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "html",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To_Email', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        256,
+        224
+      ],
+      "id": "3c9dc5ad-5a41-43f6-9877-b11f1f651193",
+      "name": "Create a draft in Gmail1",
+      "webhookId": "5dbf533c-9b72-4ec3-a134-eaab875ffc7f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "rk7eI9fJ1KsviA90",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -144,
+        0
+      ],
+      "id": "eeb4c656-06a0-43e0-8828-6b2b2fff771b",
+      "name": "When Executed by Another Workflow"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many people in Pipedrive": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a draft in Gmail1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "d25be65d-3353-4c09-870b-2037285b4184",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9931672f9dacc59c4419c63b8bc6e0fd56af69a4df254c44e359ede923557d54"
+  },
+  "id": "nTbtRSO59FnxPzjY",
+  "tags": []
+}
