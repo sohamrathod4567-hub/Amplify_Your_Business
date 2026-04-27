@@ -1,0 +1,399 @@
+{
+  "name": "Demo Booking-Subagent",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Please Book A Demo with \n{{ $json.body.name }}\nAt the Following Time:\n{{ $json.body.timeslot }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are provided with a person who would like to receive a demo of the AccountAI product and their preferred time-slot. You use your tool to check the calendar's availability, and then book the demo in the calendar. Reply with the result."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        368,
+        80
+      ],
+      "id": "e386bc66-9c66-45fc-a1be-40b7c690d361",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-robotics-er-1.5-preview",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        240,
+        304
+      ],
+      "id": "22ed8346-a6db-437d-888f-12ecfba0e8ec",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "zGAQOZTTH5dzrDOn",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get availability in a calendar in Google Calendar - whether the user is available to give demo from given start time to end time.",
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "sohamrathod4567@gmail.com",
+          "mode": "list",
+          "cachedResultName": "sohamrathod4567@gmail.com"
+        },
+        "timeMin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start_Time', ``, 'string') }}",
+        "timeMax": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End_Time', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        368,
+        304
+      ],
+      "id": "192c432c-aeed-492a-a396-b32f84fa4ac2",
+      "name": "Get availability in a calendar in Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "Qd8pbHuZuA6SH57X",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Create an event in Google Calendar to represent a demo at a time that is available.",
+        "calendar": {
+          "__rl": true,
+          "value": "sohamrathod4567@gmail.com",
+          "mode": "list",
+          "cachedResultName": "sohamrathod4567@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Description', ``, 'string') }}",
+          "location": "http://Zoom.us/afaasd.com",
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        496,
+        304
+      ],
+      "id": "d7835e77-bb3b-401c-a29f-b2dcbff4abec",
+      "name": "Create an event in Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "Qd8pbHuZuA6SH57X",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"success\" : true,\n  \"summary\" : \" Summarize thee output here\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        624,
+        304
+      ],
+      "id": "f7645b9f-91e9-4685-8947-7d76a86c4fab",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "213405ab-412c-4ce8-8ef8-e65f1f5ee389",
+              "leftValue": "={{ $json.output.success }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": "={{ false }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        832,
+        80
+      ],
+      "id": "9fe99e10-09a4-4fd2-861f-d2f9c31be7dc",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "1620211401",
+        "text": "The Demo has been Booked in you calendar!!",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1056,
+        -32
+      ],
+      "id": "80061a52-4d62-475a-af82-ded962cc8f24",
+      "name": "Send a text message",
+      "webhookId": "d7c7df2a-69ca-468f-9050-08cab99e4709",
+      "credentials": {
+        "telegramApi": {
+          "id": "yDO6M7zNIhTt8JRv",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "1620211401",
+        "text": "Failed to Bookk a demo",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1056,
+        176
+      ],
+      "id": "78a5a9cf-f6fa-4f6e-a590-69d2b1c3445f",
+      "name": "Send a text message1",
+      "webhookId": "b1da01b7-136e-4985-a930-1ac5324e046b",
+      "credentials": {
+        "telegramApi": {
+          "id": "yDO6M7zNIhTt8JRv",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "##Schedual\n",
+        "height": 560,
+        "width": 624,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        160,
+        -128
+      ],
+      "typeVersion": 1,
+      "id": "68b9e82a-2f3e-4297-b241-0362202b3c66",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Report",
+        "height": 560,
+        "width": 656,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        816,
+        -128
+      ],
+      "typeVersion": 1,
+      "id": "a11a20af-2208-4c03-a5c9-8835f86c474f",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "8b22e673-285a-4570-b2d3-ae4de6d93843",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        16,
+        80
+      ],
+      "id": "5b8bc6b9-5cff-4177-bc17-7bd11c706793",
+      "name": "Webhook",
+      "webhookId": "8b22e673-285a-4570-b2d3-ae4de6d93843"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $('AI Agent').item.json.output.summary }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1264,
+        -32
+      ],
+      "id": "4e891b82-486c-4bc0-b50d-19f273254436",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $('AI Agent').item.json.output.summary }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1264,
+        176
+      ],
+      "id": "d32fb7ed-ba7d-45c0-b546-ecea41aa0e76",
+      "name": "Respond to Webhook1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get availability in a calendar in Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event in Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "db9374e3-d967-4856-9b7e-377b5edfd5d5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9931672f9dacc59c4419c63b8bc6e0fd56af69a4df254c44e359ede923557d54"
+  },
+  "id": "TWYIrJOKvWHMitFV",
+  "tags": []
+}
