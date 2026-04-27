@@ -1,0 +1,257 @@
+{
+  "name": "RevOps Sub-Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.Sales_lead_description }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Based on the Input from the user Which describes a sales lead, you should reply with a structured version of the lead. Your reply will be sent to Pipedrive To create a lead record.`"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        80,
+        0
+      ],
+      "id": "a7ab829e-c248-403e-9823-4c1f00f73b42",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "arcee-ai/trinity-large-preview",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        80,
+        224
+      ],
+      "id": "d7997b32-c595-426f-a7e3-f6cfe627fa70",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "wZZg2YY5kbJ6hmTs",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"name\": \"The FUll name of the lead\",\n  \"company\": \"The Company, Where they work\",\n  \"role\": \"Theri Job Title\",\n  \"E-mail\": \"Their E-mail Address\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        224
+      ],
+      "id": "f442afb9-3d4d-4de6-9abb-14ad8c9a9fd2",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "resource": "organization",
+        "name": "={{ $json.output.company }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.pipedrive",
+      "typeVersion": 1,
+      "position": [
+        432,
+        0
+      ],
+      "id": "9701ea35-3c74-453b-b009-a8ab179882fc",
+      "name": "Create an organization",
+      "credentials": {
+        "pipedriveApi": {
+          "id": "pqa6MgdJbY3cDrz0",
+          "name": "Pipedrive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "person",
+        "name": "={{ $('AI Agent').item.json.output.name }}",
+        "additionalFields": {
+          "email": [
+            "={{ $('AI Agent').item.json.output['E-mail'] }}"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.pipedrive",
+      "typeVersion": 1,
+      "position": [
+        656,
+        0
+      ],
+      "id": "40070ffe-d3f2-44da-989a-efe5e28e37f9",
+      "name": "Create a person",
+      "credentials": {
+        "pipedriveApi": {
+          "id": "pqa6MgdJbY3cDrz0",
+          "name": "Pipedrive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "lead",
+        "title": "={{ $('AI Agent').item.json.output.name }}",
+        "organization_id": "={{ $('Create an organization').item.json.id }}",
+        "additionalFields": {
+          "person_id": "={{ $json.id }}"
+        }
+      },
+      "type": "n8n-nodes-base.pipedrive",
+      "typeVersion": 1,
+      "position": [
+        880,
+        0
+      ],
+      "id": "16dd25b4-1098-4ef2-bd77-83828742923a",
+      "name": "Create a lead",
+      "credentials": {
+        "pipedriveApi": {
+          "id": "pqa6MgdJbY3cDrz0",
+          "name": "Pipedrive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Parse Data\nUse An Agent With Structured Output",
+        "height": 464,
+        "width": 352
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "d151b758-336e-4db9-9987-68f394cc7220",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Load Data\nStore The Prospect data to the PipeDrive",
+        "height": 464,
+        "width": 752
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        384,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "ee0f1b9c-30c6-4c72-b720-a094fb14d849",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "Sales_lead_description"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -192,
+        0
+      ],
+      "id": "30c7a076-fcf5-4655-b62a-319033b464f4",
+      "name": "When Executed by Another Workflow"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Create an organization",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an organization": {
+      "main": [
+        [
+          {
+            "node": "Create a person",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a person": {
+      "main": [
+        [
+          {
+            "node": "Create a lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "5adf3192-553d-422d-9163-a56cf9a34bba",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9931672f9dacc59c4419c63b8bc6e0fd56af69a4df254c44e359ede923557d54"
+  },
+  "id": "zUT9WhCL0X3KviOI",
+  "tags": []
+}
